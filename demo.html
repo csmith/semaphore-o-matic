@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Semaphore-o-matic</title>
+    <meta charset="utf-8">
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+        }
+
+        img {
+            position: absolute;
+        }
+
+        #left {
+            transform-origin: bottom right;
+        }
+
+        #right {
+            transform-origin: bottom left;
+        }
+
+        #current {
+            position: absolute;
+            bottom: 10px;
+            width: 50px;
+            left: calc(50% - 25px);
+            text-align: center;
+            font-size: 5em;
+        }
+
+        #history {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: calc(50% + 45px);
+            text-align: right;
+            font-size: 5em;
+            color: #b3b3b3;
+        }
+
+        abbr {
+            border: 1px solid #b3b3b3;
+            font-size: 80%;
+        }
+    </style>
+</head>
+<body>
+<img id="figure" src="figure.png" alt="Human figurine">
+<img id="left" src="left.png" alt="Semaphore flag">
+<img id="right" src="right.png" alt="Semaphore flag">
+<span id="current"></span>
+<span id="history"></span>
+<script>
+  // Current state
+  let leftPos = 0
+  let rightPos = 0
+  let numbers = false
+  let selectingLeft = true
+
+  // HTML element references
+  let left = null
+  let right = null
+  let figure = null
+  let current = null
+  let history = null
+
+  // Cached browser info
+  let width = 0
+  let height = 0
+
+  // The actual semaphore and special bits
+  let switchToLetters = '<abbr title="Letters mode">abc</abbr>'
+  let switchToNumbers = '<abbr title="Numerals mode">123</abbr>'
+  let unknown = '?'
+  let semaphore = {}
+  semaphore[3 * 8 + 4] = ['A', '1']
+  semaphore[2 * 8 + 4] = ['B', '2']
+  semaphore[1 * 8 + 4] = ['C', '3']
+  semaphore[0 * 8 + 4] = ['D', '4']
+  semaphore[4 * 8 + 1] = ['E', '5']
+  semaphore[4 * 8 + 2] = ['F', '6']
+  semaphore[4 * 8 + 3] = ['G', '7']
+  semaphore[2 * 8 + 5] = ['H', '8']
+  semaphore[1 * 8 + 5] = ['I', '9']
+  semaphore[0 * 8 + 2] = ['J', switchToLetters]
+  semaphore[3 * 8 + 0] = ['K', '0']
+  semaphore[3 * 8 + 1] = ['L']
+  semaphore[3 * 8 + 2] = ['M']
+  semaphore[3 * 8 + 3] = ['N']
+  semaphore[2 * 8 + 7] = ['O']
+  semaphore[2 * 8 + 0] = ['P']
+  semaphore[2 * 8 + 1] = ['Q']
+  semaphore[2 * 8 + 2] = ['R']
+  semaphore[2 * 8 + 3] = ['S']
+  semaphore[1 * 8 + 0] = ['T']
+  semaphore[2 * 8 + 2] = ['U']
+  semaphore[0 * 8 + 4] = ['V']
+  semaphore[7 * 8 + 2] = ['W']
+  semaphore[7 * 8 + 3] = ['X']
+  semaphore[1 * 8 + 2] = ['Y']
+  semaphore[5 * 8 + 2] = ['Z']
+  semaphore[4 * 8 + 4] = ['<abbr title="Rest">rst</abbr>']
+  semaphore[0 * 8 + 1] = [switchToNumbers]
+  semaphore[1 * 8 + 3] = ['<abbr title="Cancel/Disregard">cancel</abbr>']
+
+  function relayout () {
+    let figureTop = (height - figure.height) / 2
+    let figureLeft = (width - figure.width) / 2
+    figure.style.top = figureTop + 'px'
+    figure.style.left = figureLeft + 'px'
+
+    // pos 0 - top
+    // pos 1 - 45 degrees left
+    // pos 2 - left
+    // pos 3 - 45 degrees down
+    // pos 4 - down
+    left.style.top = (figureTop - left.height + 60) + 'px'
+    left.style.left = (figureLeft - left.width - 20) + 'px'
+    left.style.transform = 'rotate(' + (-45 * leftPos) + 'deg)'
+
+    right.style.top = (figureTop - right.height + 60) + 'px'
+    right.style.left = (figureLeft + figure.width + 20) + 'px'
+    right.style.transform = 'rotate(' + (45 * rightPos) + 'deg)'
+
+    current.innerHTML = selectingLeft ? ' ' : signal()
+  }
+
+  function signal () {
+    let index = leftPos * 8 + rightPos
+    let backwardsIndex = ((8 - rightPos) % 8) * 8 + ((8 - leftPos) % 8)
+    let signal = semaphore[index] || semaphore[backwardsIndex]
+    return (signal && signal[numbers ? 1 : 0]) || unknown
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    left = document.getElementById('left')
+    right = document.getElementById('right')
+    figure = document.getElementById('figure')
+    current = document.getElementById('current')
+    history = document.getElementById('history')
+
+    width = window.innerWidth || document.body.clientWidth
+    height = window.innerHeight || document.body.clientHeight
+
+    left.onload = relayout
+    right.onload = relayout
+    figure.onload = relayout
+
+    relayout()
+  })
+
+  document.addEventListener('mousemove', function (e) {
+    let anchorX = width / 2 + (figure.width / 2 + 20) * (selectingLeft ? -1 : 1)
+    let anchorY = left.offsetTop + left.height
+    let offsetX = selectingLeft ? (anchorX - e.pageX) : (e.pageX - anchorX)
+
+    let angle = 180 * Math.atan(offsetX / (anchorY - e.pageY)) / Math.PI
+    if (angle < 0) { angle += 180 }
+    if (selectingLeft !== e.pageX < anchorX) { angle += 180 }
+    if (selectingLeft) {
+      leftPos = Math.round(angle / 45) % 8
+    } else {
+      rightPos = Math.round(angle / 45) % 8
+    }
+    relayout()
+  })
+
+  document.addEventListener('mousedown', function () {
+    selectingLeft = !selectingLeft
+    if (selectingLeft) {
+      let last = signal()
+      history.innerHTML += last
+      if (last === switchToNumbers) {
+        numbers = true
+      } else if (last === switchToLetters) {
+        numbers = false
+      }
+    }
+    relayout()
+  })
+</script>
+</body>
+</html>
