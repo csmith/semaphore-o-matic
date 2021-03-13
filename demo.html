@@ -183,6 +183,12 @@
     }
     relayout()
   })
+
+  window.addEventListener('resize', function () {
+    width = window.innerWidth || document.body.clientWidth
+    height = window.innerHeight || document.body.clientHeight
+    relayout()
+  })
 </script>
 </body>
 </html>
