@@ -1,0 +1,13 @@
+= Semaphore-o-matic
+
+image::./example.png?raw=true[Semaphore-o-matic showing the 'D' in "Hello World"]
+
+Provides a simple browser-based way of quickly decoding https://en.wikipedia.org/wiki/Flag_semaphore[flag semaphore].
+See the live version at https://csmith.github.io/semaphore-o-matic/demo.
+
+Usage:
+
+* Mouse movement: position the current flag
+* Left mouse: set the current flag, move on to the next
+* Right mouse: go back to the left-hand flag
+* Keyboard keys: show the corresponding flags for that key
