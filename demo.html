@@ -171,7 +171,14 @@
     relayout()
   })
 
-  document.addEventListener('mousedown', function () {
+  document.addEventListener('mousedown', function (e) {
+    if (e.button === 2) {
+      // RMB
+      selectingLeft = true
+      relayout()
+      return
+    }
+
     selectingLeft = !selectingLeft
     if (selectingLeft) {
       let last = signal()
@@ -184,6 +191,8 @@
     }
     relayout()
   })
+
+  window.addEventListener('contextmenu', (e) => e.preventDefault())
 
   window.addEventListener('resize', function () {
     width = window.innerWidth || document.body.clientWidth
