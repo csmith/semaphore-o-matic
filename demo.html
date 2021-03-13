@@ -74,36 +74,37 @@
   let switchToLetters = '<abbr title="Letters mode">abc</abbr>'
   let switchToNumbers = '<abbr title="Numerals mode">123</abbr>'
   let unknown = '?'
-  let semaphore = {}
-  semaphore[3 * 8 + 4] = ['A', '1']
-  semaphore[2 * 8 + 4] = ['B', '2']
-  semaphore[1 * 8 + 4] = ['C', '3']
-  semaphore[0 * 8 + 4] = ['D', '4']
-  semaphore[4 * 8 + 1] = ['E', '5']
-  semaphore[4 * 8 + 2] = ['F', '6']
-  semaphore[4 * 8 + 3] = ['G', '7']
-  semaphore[2 * 8 + 5] = ['H', '8']
-  semaphore[1 * 8 + 5] = ['I', '9']
-  semaphore[0 * 8 + 2] = ['J', switchToLetters]
-  semaphore[3 * 8 + 0] = ['K', '0']
-  semaphore[3 * 8 + 1] = ['L']
-  semaphore[3 * 8 + 2] = ['M']
-  semaphore[3 * 8 + 3] = ['N']
-  semaphore[2 * 8 + 7] = ['O']
-  semaphore[2 * 8 + 0] = ['P']
-  semaphore[2 * 8 + 1] = ['Q']
-  semaphore[2 * 8 + 2] = ['R']
-  semaphore[2 * 8 + 3] = ['S']
-  semaphore[1 * 8 + 0] = ['T']
-  semaphore[1 * 8 + 1] = ['U']
-  semaphore[0 * 8 + 3] = ['V']
-  semaphore[7 * 8 + 2] = ['W']
-  semaphore[7 * 8 + 3] = ['X']
-  semaphore[1 * 8 + 2] = ['Y']
-  semaphore[5 * 8 + 2] = ['Z']
-  semaphore[4 * 8 + 4] = ['<abbr title="Rest">rst</abbr>']
-  semaphore[0 * 8 + 1] = [switchToNumbers]
-  semaphore[1 * 8 + 3] = ['<abbr title="Cancel/Disregard">cancel</abbr>']
+  let semaphore = new Map([
+    [3 * 8 + 4, ['A', '1']],
+    [2 * 8 + 4, ['B', '2']],
+    [1 * 8 + 4, ['C', '3']],
+    [0 * 8 + 4, ['D', '4']],
+    [4 * 8 + 1, ['E', '5']],
+    [4 * 8 + 2, ['F', '6']],
+    [4 * 8 + 3, ['G', '7']],
+    [2 * 8 + 5, ['H', '8']],
+    [1 * 8 + 5, ['I', '9']],
+    [0 * 8 + 2, ['J', switchToLetters]],
+    [3 * 8 + 0, ['K', '0']],
+    [3 * 8 + 1, ['L']],
+    [3 * 8 + 2, ['M']],
+    [3 * 8 + 3, ['N']],
+    [2 * 8 + 7, ['O']],
+    [2 * 8 + 0, ['P']],
+    [2 * 8 + 1, ['Q']],
+    [2 * 8 + 2, ['R']],
+    [2 * 8 + 3, ['S']],
+    [1 * 8 + 0, ['T']],
+    [1 * 8 + 1, ['U']],
+    [0 * 8 + 3, ['V']],
+    [7 * 8 + 2, ['W']],
+    [7 * 8 + 3, ['X']],
+    [1 * 8 + 2, ['Y']],
+    [5 * 8 + 2, ['Z']],
+    [4 * 8 + 4, ['<abbr title="Rest">rst</abbr>']],
+    [0 * 8 + 1, [switchToNumbers]],
+    [1 * 8 + 3, ['<abbr title="Cancel/Disregard">cancel</abbr>']],
+  ])
 
   function relayout () {
     let figureTop = (height - figure.height) / 2
@@ -133,7 +134,7 @@
   function signal () {
     let index = leftPos * 8 + rightPos
     let backwardsIndex = ((8 - rightPos) % 8) * 8 + ((8 - leftPos) % 8)
-    let signal = semaphore[index] || semaphore[backwardsIndex]
+    let signal = semaphore.get(index) || semaphore.get(backwardsIndex)
     return (signal && signal[numbers ? 1 : 0]) || unknown
   }
 
@@ -188,6 +189,18 @@
     width = window.innerWidth || document.body.clientWidth
     height = window.innerHeight || document.body.clientHeight
     relayout()
+  })
+
+  document.addEventListener('keydown', function (e) {
+    let target = e.key.toUpperCase()
+    semaphore.forEach((value, key) => {
+      if (value[0] === target || value[1] === target) {
+        rightPos = key % 8
+        leftPos = (key - rightPos) / 8
+        selectingLeft = false
+        relayout()
+      }
+    })
   })
 </script>
 </body>
